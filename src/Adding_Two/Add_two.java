@@ -4,7 +4,7 @@ package Adding_Two;
 
 public class Add_two {
 
-    public static void adding (ListNode l1, ListNode l2) {
+    private static void adding (ListNode l1, ListNode l2) {
         while (l1 != null) {
             l1.val = l1.val + l2.val;
             if (l1.val >= 10) {
@@ -20,7 +20,7 @@ public class Add_two {
         }
     }
 
-    public static void main (String args0[]) {
+    public static void main (String[] args) {
         ListNode a = new ListNode(2);
         a.next = new ListNode(4);
         a.next.next = new ListNode(3);
