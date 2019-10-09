@@ -1,3 +1,5 @@
+//problem #1 Euler
+
 public class Euler_multiples {
 
     public static void main (String[] args) {
