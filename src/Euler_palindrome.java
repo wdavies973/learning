@@ -14,9 +14,10 @@ public class Euler_palindrome {
                 for (int k = 0; k < str.length() / 2; k++) {
                     if (str.charAt(k) != str.charAt(str.length() - k - 1)) {
                         pal = false;
+                        break;
                     }
                 }
-                if (pal == true && largest < i * j) {
+                if (pal && largest < i * j) {
                     largest = i * j;
                     max_i = i;
                     max_j = j;
