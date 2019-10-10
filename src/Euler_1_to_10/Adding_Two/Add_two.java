@@ -1,6 +1,6 @@
 //packaged the classes ListNode and Add_two together
 //this is problem #2 on LeetCode
-package Adding_Two;
+package Euler_1_to_10.Adding_Two;
 
 public class Add_two {
 

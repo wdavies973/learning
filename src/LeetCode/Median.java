@@ -1,3 +1,5 @@
+package LeetCode;
+
 public class Median {
 
     private static double med (int[] num1, int[] num2) {

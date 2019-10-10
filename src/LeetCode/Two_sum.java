@@ -1,3 +1,5 @@
+package LeetCode;
+
 //this is problem #1 on leetcode, just starting to work through them
 public class Two_sum {
 

@@ -1,4 +1,4 @@
-// problem #7 on Euler
+package Euler_1_to_10;// problem #7 on Euler
 
 // When looking at a solution to compare it to my own, I was reminded that all prime
 // numbers except 2 and 3 follow form 6x +- 1, which allow for much more optimized

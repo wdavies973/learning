@@ -1,4 +1,4 @@
-
+package Euler_1_to_10;
 
 //problem # 5 on Euler
 

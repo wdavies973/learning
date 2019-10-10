@@ -1,4 +1,4 @@
-// problem #6 on Euler
+package Euler_1_to_10;// problem #6 on Euler
 
 //Found a way better solution online when comparing answers,
 // but this is what I thought of, and the other one is an equation.

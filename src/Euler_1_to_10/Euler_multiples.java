@@ -1,4 +1,4 @@
-//problem #1 Euler
+package Euler_1_to_10;//problem #1 Euler
 
 public class Euler_multiples {
 

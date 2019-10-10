@@ -1,4 +1,4 @@
-// problem #2 Euler
+package Euler_1_to_10;// problem #2 Euler
 
 public class Euler_Even_Fib {
 

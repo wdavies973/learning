@@ -1,3 +1,4 @@
+package LeetCode;
 
 public class Longest_Substring {
     private static int length(String str) {

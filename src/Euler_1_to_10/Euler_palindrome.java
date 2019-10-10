@@ -1,4 +1,4 @@
-// problem #4 on Euler
+package Euler_1_to_10;// problem #4 on Euler
 
 public class Euler_palindrome {
 

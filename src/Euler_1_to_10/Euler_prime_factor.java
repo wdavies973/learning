@@ -1,4 +1,4 @@
-//problem # 3 Euler
+package Euler_1_to_10;//problem # 3 Euler
 
 public class Euler_prime_factor {
 
