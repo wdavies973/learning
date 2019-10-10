@@ -14,7 +14,7 @@ public class Euler_primes10001 {
         Arrays.fill(primes, true);
 
         for (int i = 2; i < primes.length; i++) {
-            if (primes[i] == true) {
+            if (primes[i]) {
                 count++;
                 if (count == num) {
                     return i;
@@ -28,7 +28,8 @@ public class Euler_primes10001 {
     }
 
     public static void main (String[] args) {
-        int index = prime(10001);
+        int num = 10001;
+        int index = prime(num);
         System.out.println(index);
     }
 }
