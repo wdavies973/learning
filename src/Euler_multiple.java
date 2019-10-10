@@ -1,4 +1,4 @@
-import java.lang.Math;
+
 
 //problem # 5 on Euler
 
