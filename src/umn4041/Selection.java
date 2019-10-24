@@ -1,4 +1,4 @@
-package miscellaneous;
+package umn4041;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -15,7 +15,7 @@ public class Selection {
     private static Random random;
 
     // Wrapper function for the below function
-    private static int select(int[] array, int i) {
+    public static int select(int[] array, int i) {
         return select(array, 0, array.length - 1, i, 0);
     }
 
@@ -84,7 +84,7 @@ public class Selection {
         // Search for the pivot value and exchange it into the last place,
         // there might be a better way to do this, but this still maintains the same
         // runtime of O(n) for partition
-        for(int a = 0; a <= r; a++) {
+        for(int a = p; a <= r; a++) {
             if(array[a] == pivot) {
                 array[a] = array[r];
                 array[r] = pivot;
@@ -150,7 +150,7 @@ public class Selection {
         int[] array = new int[]{10, 3, 2, 1, 5, 6, 11, 9, 13, 52, 7, 14, 8, 12};
         shuffle(array);
 
-        int i = 1; // the "ith" smallest element to find in array
+        int i = 14; // the "ith" smallest element to find in array
 
         System.out.println("The " + i + "th smallest element, found in O(n) time is: " + Selection.select(array, i));
     }
