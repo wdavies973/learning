@@ -215,12 +215,12 @@ public class MatrixChain {
     /*
      * row & col track the current position in s
      */
-    private Matrix matrixChainMultiply(Matrix[] matrices, Matrix s, int row, int col) {
+    private Matrix matrixChainMultiply(Matrix[] matrices, Matrix s, int i, int j) {
         // Check for length of only 2
-        if(col - row + 1 == 1) return matrices[0];
-        else if(col - row + 1 == 2) return matrices[0].multiply(matrices[1]);
+        if(j - i + 1 == 1) return matrices[0];
+        else if(j - i + 1 == 2) return matrices[0].multiply(matrices[1]);
 
-        int k = s.get(row, col);
+        int k = s.get(i, j);
 
         Matrix[] left = new Matrix[k];
         Matrix[] right = new Matrix[matrices.length - k];
@@ -229,7 +229,7 @@ public class MatrixChain {
         System.arraycopy(matrices, 0, left, 0, k);
         System.arraycopy(matrices, k, right, 0, matrices.length - k);
 
-        return matrixChainMultiply(left, s, row, k).multiply(matrixChainMultiply(right, s, k+1, col));
+        return matrixChainMultiply(left, s, i, k).multiply(matrixChainMultiply(right, s, k+1, j));
     }
 
     public static void main(String[] args) {
@@ -238,25 +238,26 @@ public class MatrixChain {
         Matrix A3 = new Matrix(6, 2);
         Matrix A4 = new Matrix(2, 7);
 
-        System.out.println(new MatrixChain().multiply(A1, A2, A3, A4));
+//        System.out.println(new MatrixChain().multiply(A1, A2, A3, A4));
 
-//        int[][] multi = new int[][]{
-//                {1,2,3},
-//                {4,5,6}
-//        };
-//
-//        int[][] multi2 = new int[][]{
-//                {7,8},
-//                {9,10},
-//                {11, 12}
-//        };
-//
-//        Matrix a = new Matrix(multi);
-//        Matrix b = new Matrix(multi2);
-//
-//        System.out.println(a.multiply(b));
-//
-//
+        int[][] multi = new int[][]{
+                {123,2,4},
+                {0,4,2},
+                {6,1,2}
+        };
+
+        int[][] multi2 = new int[][]{
+                {2,3,4},
+                {4,3,34},
+                {1,4,-78}
+        };
+
+        Matrix a = new Matrix(multi);
+        Matrix b = new Matrix(multi2);
+
+        System.out.println(new MatrixChain().multiply(a, b));
+
+
 
     }
 
