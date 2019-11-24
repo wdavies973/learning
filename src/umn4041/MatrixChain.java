@@ -213,7 +213,7 @@ public class MatrixChain {
     }
 
     /*
-     * row & col track the current position in s
+     * i & j track the current position in s
      */
     private Matrix matrixChainMultiply(Matrix[] matrices, Matrix s, int i, int j) {
         // Check for length of only 2
@@ -256,9 +256,6 @@ public class MatrixChain {
         Matrix b = new Matrix(multi2);
 
         System.out.println(new MatrixChain().multiply(a, b));
-
-
-
     }
 
 }
