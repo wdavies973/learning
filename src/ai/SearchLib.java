@@ -145,6 +145,31 @@ public class SearchLib {
                 System.out.print(path.pop().id + (path.isEmpty() ? "" : " --> "));
             }
         }
+
+        public static void printPath(HashMap<Character, Integer> map, Vertex v) {
+            Stack<Vertex> path = new Stack<>();
+
+            System.out.print("Path (cost = " + v.distance + "): ");
+
+            while (v != null) {
+                path.push(v);
+
+                v = v.predecessor;
+            }
+
+            // Print path
+            while (!path.isEmpty()) {
+                for(Character c : map.keySet()) {
+                    if(map.get(c) == path.peek().id) {
+                        path.pop();
+                        System.out.print(c + (path.isEmpty() ? "" : " --> "));
+                        break;
+                    }
+                }
+
+
+            }
+        }
     }
 
 
@@ -297,13 +322,12 @@ public class SearchLib {
     public static class IterateUniformCostSearch {
 
         private Graph graph;
-        private Vertex s;
         private PriorityQueue exploring = new PriorityQueue();
 
         public IterateUniformCostSearch(Graph g, int source) {
             this.graph = g.clone();
 
-            s = graph.vertex(source);
+            Vertex s = graph.vertex(source);
             s.predecessor = null;
             s.distance = 0;
             s.color = Vertex.Color.Gray;
@@ -337,6 +361,16 @@ public class SearchLib {
                 u.color = Vertex.Color.Black;
             }
 
+        }
+
+        public void printSolution(HashMap<Character, Integer> map, IterateUniformCostSearch ucs) {
+            for (int i = 0; i < graph.numVertices; i++) {
+                if (graph.vertices[i].color == Vertex.Color.Black
+                        && ucs.graph.vertices[i].color == Vertex.Color.Black) {
+                    Graph.printPath(map, graph.vertex(i));
+                    return;
+                }
+            }
         }
 
         public boolean overlaps(IterateUniformCostSearch ucs) {
@@ -453,7 +487,7 @@ public class SearchLib {
             this.g = g.clone();
         }
 
-        public void search(int source, int destination) {
+        public void search(HashMap<Character, Integer> map, int source, int destination) {
             IterateUniformCostSearch s1 = new IterateUniformCostSearch(g.clone(), source);
             IterateUniformCostSearch s2 = new IterateUniformCostSearch(g.clone(), destination);
 
@@ -467,12 +501,68 @@ public class SearchLib {
 
                 if(s1.overlaps(s2)) {
                     System.out.println("FOUND SOLUTION");
+                    s1.printSolution(map, s2);
+                    s2.printSolution(map, s1);
                     return;
                 }
             }
 
         }
     }
+
+    /*
+     * Informed searches
+     */
+    public static class GreedyBestFirstSearch {
+
+        private Graph graph;
+        private HashMap<Integer, Integer> heuristicTable;
+
+        public GreedyBestFirstSearch(Graph g, HashMap<Integer, Integer> heuristicTable) {
+            this.graph = g.clone();
+            this.heuristicTable = heuristicTable;
+        }
+
+        public void search(int source, int destination) {
+            Vertex s = graph.vertex(source);
+            s.predecessor = null;
+            s.distance = 0;
+            s.color = Vertex.Color.Gray;
+
+            PriorityQueue exploring = new PriorityQueue();
+            exploring.add(s, 0);
+
+            while (!exploring.isEmpty()) {
+                Vertex u = exploring.pop();
+
+                if (u.id == destination) {
+                    Graph.printPath(u);
+                    return;
+                }
+
+                Vertex[] adj = graph.adjList(u.id);
+                for (Vertex v : adj) {
+                    if (v.color == Vertex.Color.White) {
+                        v.color = Vertex.Color.Gray;
+                        v.distance = u.distance + graph.cost(u.id, v.id);
+                        v.predecessor = u;
+
+                        exploring.add(v, heuristicTable.get(v.id));
+                    }
+                    // We are looking for a path to 'v', if the frontier already contains 'v' with a higher cost,
+                    // add the updated cost to it
+                    else if (exploring.cost(v.id) > u.distance + graph.cost(u.id, v.id)) {
+                        v.predecessor = u;
+                        v.distance = u.distance + graph.cost(u.id, v.id);
+                        exploring.replace(v.id, v, u.distance + graph.cost(u.id, v.id));
+                    }
+                    u.color = Vertex.Color.Black;
+                }
+            }
+        }
+    }
+
+
 
     public static void main(String[] args) {
         // Example from page 86
@@ -486,43 +576,93 @@ public class SearchLib {
 //        new RecursiveDFS(g).search(0, 4, 3);
 
         // Example from HW2, A = 0, B = 1, so forth
-        HashMap<Character, Integer> v = new HashMap<>();
-        v.put('A', 0);
-        v.put('B', 1);
-        v.put('C', 2);
-        v.put('D', 3);
-        v.put('E', 4);
-        v.put('F', 5);
-        v.put('G', 6);
-        v.put('H', 7);
-        v.put('I', 8);
-        v.put('J', 9);
-        v.put('K', 10);
-        v.put('L', 11);
-        v.put('M', 12);
+//        HashMap<Character, Integer> v = new HashMap<>();
+//        v.put('A', 0);
+//        v.put('B', 1);
+//        v.put('C', 2);
+//        v.put('D', 3);
+//        v.put('E', 4);
+//        v.put('F', 5);
+//        v.put('G', 6);
+//        v.put('H', 7);
+//        v.put('I', 8);
+//        v.put('J', 9);
+//        v.put('K', 10);
+//        v.put('L', 11);
+//        v.put('M', 12);
+//
+//        Graph g = new Graph(13);
+//        g.addTwoWayEdge(v.get('A'), v.get('B'), 2);
+//        g.addTwoWayEdge(v.get('A'), v.get('C'), 3);
+//        g.addTwoWayEdge(v.get('A'), v.get('E'), 9);
+//        g.addTwoWayEdge(v.get('B'), v.get('D'), 2);
+//        g.addTwoWayEdge(v.get('B'), v.get('G'), 3);
+//        g.addTwoWayEdge(v.get('C'), v.get('F'), 1);
+//        g.addTwoWayEdge(v.get('E'), v.get('H'), 2);
+//        g.addTwoWayEdge(v.get('E'), v.get('F'), 4);
+//        g.addTwoWayEdge(v.get('H'), v.get('K'), 7);
+//        g.addTwoWayEdge(v.get('F'), v.get('K'), 8);
+//        g.addTwoWayEdge(v.get('G'), v.get('J'), 8);
+//        g.addTwoWayEdge(v.get('E'), v.get('G'), 6);
+//        g.addTwoWayEdge(v.get('D'), v.get('I'), 7);
+//        g.addTwoWayEdge(v.get('I'), v.get('L'), 6);
+//        g.addTwoWayEdge(v.get('J'), v.get('L'), 5);
+//        g.addTwoWayEdge(v.get('L'), v.get('M'), 1);
+//        g.addTwoWayEdge(v.get('J'), v.get('M'), 3);
+//        g.addTwoWayEdge(v.get('K'), v.get('M'), 5);
+//        g.addTwoWayEdge(v.get('H'), v.get('J'), 4);
+//        g.addTwoWayEdge(v.get('G'), v.get('I'), 6);
+//
+//        new BidirectionalSearch(g).search(v, 0, 12);
 
-        Graph g = new Graph(13);
-        g.addTwoWayEdge(v.get('A'), v.get('B'), 2);
-        g.addTwoWayEdge(v.get('A'), v.get('C'), 2);
-        g.addTwoWayEdge(v.get('A'), v.get('E'), 2);
-        g.addTwoWayEdge(v.get('B'), v.get('D'), 2);
-        g.addTwoWayEdge(v.get('B'), v.get('G'), 2);
-        g.addTwoWayEdge(v.get('C'), v.get('F'), 2);
-        g.addTwoWayEdge(v.get('E'), v.get('H'), 2);
-        g.addTwoWayEdge(v.get('E'), v.get('F'), 2);
-        g.addTwoWayEdge(v.get('H'), v.get('K'), 2);
-        g.addTwoWayEdge(v.get('F'), v.get('K'), 2);
-        g.addTwoWayEdge(v.get('G'), v.get('J'), 2);
-        g.addTwoWayEdge(v.get('E'), v.get('G'), 2);
-        g.addTwoWayEdge(v.get('D'), v.get('I'), 2);
-        g.addTwoWayEdge(v.get('I'), v.get('L'), 2);
-        g.addTwoWayEdge(v.get('J'), v.get('L'), 2);
-        g.addTwoWayEdge(v.get('L'), v.get('M'), 2);
-        g.addTwoWayEdge(v.get('J'), v.get('M'), 2);
-        g.addTwoWayEdge(v.get('K'), v.get('M'), 2);
-        g.addTwoWayEdge(v.get('H'), v.get('J'), 2);
-        g.addTwoWayEdge(v.get('G'), v.get('I'), 2);
+        // Cities problem, commonly used by the book
+        Graph g = new Graph(20);
+        g.addTwoWayEdge(0, 1, 118);
+        g.addTwoWayEdge(0, 2, 75);
+        g.addTwoWayEdge(2, 3, 71);
+        g.addTwoWayEdge(3, 4, 151);
+        g.addTwoWayEdge(1, 5, 111);
+        g.addTwoWayEdge(5, 6, 70);
+        g.addTwoWayEdge(6, 7, 75);
+        g.addTwoWayEdge(7, 8, 120);
+        g.addTwoWayEdge(8, 9, 146);
+        g.addTwoWayEdge(9, 4, 80);
+        g.addTwoWayEdge(8, 11, 138);
+        g.addTwoWayEdge(0, 4, 140);
+        g.addTwoWayEdge(4, 10, 99);
+        g.addTwoWayEdge(9, 11, 97);
+        g.addTwoWayEdge(10, 13, 211);
+        g.addTwoWayEdge(11, 13, 101);
+        g.addTwoWayEdge(13, 12, 90);
+        g.addTwoWayEdge(13, 14, 85);
+        g.addTwoWayEdge(14, 15, 98);
+        g.addTwoWayEdge(15, 16, 86);
+        g.addTwoWayEdge(14, 17, 142);
+        g.addTwoWayEdge(17, 18, 92);
+        g.addTwoWayEdge(18, 19, 87);
 
+        HashMap<Integer, Integer> heuristics = new HashMap<>();
+
+        heuristics.put(0, 366);
+        heuristics.put(13, 0);
+        heuristics.put(8, 160);
+        heuristics.put(7, 242);
+        heuristics.put(16, 161);
+        heuristics.put(10, 176);
+        heuristics.put(12, 77);
+        heuristics.put(15, 151);
+        heuristics.put(18, 226);
+        heuristics.put(5, 244);
+        heuristics.put(6, 241);
+        heuristics.put(19, 234);
+        heuristics.put(3, 380);
+        heuristics.put(11, 100);
+        heuristics.put(9, 193);
+        heuristics.put(4, 253);
+        heuristics.put(1, 329);
+        heuristics.put(14, 80);
+        heuristics.put(17, 199);
+        heuristics.put(2, 374);
 
     }
 
