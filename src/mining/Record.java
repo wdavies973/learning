@@ -296,7 +296,7 @@ public class Record {
         Set<Double> set1 = new HashSet<>();
         Set<Double> set2 = new HashSet<>();
 
-        TupleHelper helper = new TupleHelper();
+        TupleHelper helper = new TupleHelper(this, record);
 
         for(int i = 0; i < attributes.size(); i++) {
             set1.add(this.attributes.get(i).value);
