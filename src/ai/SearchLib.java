@@ -1,16 +1,15 @@
 package ai;
 
 // Definitions
-    // Frontier/fringe - leaf nodes available for expansion
-    // Expanding - apply legal action to the current state
-    // Branch factor - maximum amount of successors to any node
-    // depth - distance from the top
-    // height - distance from the bottom
+// Frontier/fringe - leaf nodes available for expansion
+// Expanding - apply legal action to the current state
+// Branch factor - maximum amount of successors to any node
+// depth - distance from the top
+// height - distance from the bottom
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
+import umn4041.GraphLib;
+
+import java.util.*;
 
 public class SearchLib {
 
@@ -20,7 +19,10 @@ public class SearchLib {
     // vertex id = index
     public interface Searchable {
         Vertex vertex(int index);
+
         Vertex[] adjList(int index);
+
+        int cost(int v1, int v2);
     }
 
     public static class Vertex {
@@ -49,7 +51,7 @@ public class SearchLib {
 
         private Vertex[] vertices;
 
-        private int numVertices;
+        public int numVertices;
         private int[][] matrix; // stores connections + weights, infinity if not reachable
 
         public Graph(int numVertices) {
@@ -57,15 +59,15 @@ public class SearchLib {
             this.numVertices = numVertices;
 
             // Create vertices
-            for(int i = 0; i < numVertices; i++) {
+            for (int i = 0; i < numVertices; i++) {
                 this.vertices[i] = new Vertex(i);
             }
 
             this.matrix = new int[numVertices][numVertices];
 
-            for(int i = 0; i < numVertices; i++) {
-                for(int j = 0; j < numVertices; j++) {
-                    if(i != j) {
+            for (int i = 0; i < numVertices; i++) {
+                for (int j = 0; j < numVertices; j++) {
+                    if (i != j) {
                         this.matrix[i][j] = Integer.MAX_VALUE;
                     }
                 }
@@ -95,8 +97,8 @@ public class SearchLib {
         public Vertex[] adjList(int index) {
             ArrayList<Vertex> vertices = new ArrayList<>();
 
-            for(int i = 0; i < numVertices; i++) {
-                if(matrix[index][i] < Integer.MAX_VALUE && i != index) { // a path exists, ignore path to self
+            for (int i = 0; i < numVertices; i++) {
+                if (matrix[index][i] < Integer.MAX_VALUE && i != index) { // a path exists, ignore path to self
                     vertices.add(this.vertices[i]);
                 }
             }
@@ -104,6 +106,7 @@ public class SearchLib {
             return vertices.toArray(new Vertex[0]);
         }
 
+        @Override
         public int cost(int v1, int v2) {
             return matrix[v1][v2];
         }
@@ -118,9 +121,9 @@ public class SearchLib {
 
         public void print() {
             System.out.println("Costs: ");
-            for(int row = 0; row < numVertices; row++) {
-                for(int col = 0; col < numVertices; col++) {
-                    System.out.print(matrix[row][col]+" ");
+            for (int row = 0; row < numVertices; row++) {
+                for (int col = 0; col < numVertices; col++) {
+                    System.out.print(matrix[row][col] + " ");
                 }
                 System.out.println();
             }
@@ -129,17 +132,17 @@ public class SearchLib {
         public static void printPath(Vertex v) {
             Stack<Vertex> path = new Stack<>();
 
-            System.out.print("Path (cost = "+v.distance+"): ");
+            System.out.print("Path (cost = " + v.distance + "): ");
 
-            while(v != null) {
+            while (v != null) {
                 path.push(v);
 
                 v = v.predecessor;
             }
 
             // Print path
-            while(!path.isEmpty()) {
-                System.out.print(path.pop().id+ (path.isEmpty() ? "" : " --> "));
+            while (!path.isEmpty()) {
+                System.out.print(path.pop().id + (path.isEmpty() ? "" : " --> "));
             }
         }
     }
@@ -158,6 +161,7 @@ public class SearchLib {
     public static class BreadthFirstSearch {
         private Graph graph;
 
+
         public BreadthFirstSearch(Graph g) {
             this.graph = g.clone();
         }
@@ -171,22 +175,22 @@ public class SearchLib {
             Queue<Vertex> exploring = new LinkedList<>();
             exploring.add(s);
 
-            System.out.print(source+" ");
+            System.out.print(source + " ");
 
-            while(!exploring.isEmpty()) {
+            while (!exploring.isEmpty()) {
                 Vertex u = exploring.remove();
 
                 Vertex[] adj = graph.adjList(u.id);
 
-                for(Vertex v : adj) {
-                    if(v.color == Vertex.Color.White) {
+                for (Vertex v : adj) {
+                    if (v.color == Vertex.Color.White) {
                         v.color = Vertex.Color.Gray;
                         v.distance = u.distance + 1;
                         v.predecessor = u;
 
                         exploring.add(v);
 
-                        System.out.print(v.id+" ");
+                        System.out.print(v.id + " ");
                     }
                     u.color = Vertex.Color.Black;
                 }
@@ -203,20 +207,20 @@ public class SearchLib {
             Queue<Vertex> exploring = new LinkedList<>();
             exploring.add(s);
 
-            while(!exploring.isEmpty()) {
+            while (!exploring.isEmpty()) {
                 Vertex u = exploring.remove();
 
                 Vertex[] adj = graph.adjList(u.id);
                 System.out.print("Frontier: ");
-                for(Vertex v : adj) {
-                    System.out.println(v.id+" ");
+                for (Vertex v : adj) {
+                    System.out.println(v.id + " ");
 
-                    if(v.color == Vertex.Color.White) {
+                    if (v.color == Vertex.Color.White) {
                         v.color = Vertex.Color.Gray;
                         v.distance = u.distance + 1;
                         v.predecessor = u;
 
-                        if(v.id == destination) {
+                        if (v.id == destination) {
                             Graph.printPath(v);
                             return;
                         }
@@ -228,6 +232,7 @@ public class SearchLib {
                 System.out.println();
             }
         }
+
     }
 
     /*
@@ -259,17 +264,17 @@ public class SearchLib {
             PriorityQueue exploring = new PriorityQueue();
             exploring.add(s, 0);
 
-            while(!exploring.isEmpty()) {
+            while (!exploring.isEmpty()) {
                 Vertex u = exploring.pop();
 
-                if(u.id == destination) {
+                if (u.id == destination) {
                     Graph.printPath(u);
                     return;
                 }
 
                 Vertex[] adj = graph.adjList(u.id);
-                for(Vertex v : adj) {
-                    if(v.color == Vertex.Color.White) {
+                for (Vertex v : adj) {
+                    if (v.color == Vertex.Color.White) {
                         v.color = Vertex.Color.Gray;
                         v.distance = u.distance + graph.cost(u.id, v.id);
                         v.predecessor = u;
@@ -278,7 +283,7 @@ public class SearchLib {
                     }
                     // We are looking for a path to 'v', if the frontier already contains 'v' with a higher cost,
                     // add the updated cost to it
-                    else if(exploring.cost(v.id) > u.distance + graph.cost(u.id, v.id)) {
+                    else if (exploring.cost(v.id) > u.distance + graph.cost(u.id, v.id)) {
                         v.predecessor = u;
                         v.distance = u.distance + graph.cost(u.id, v.id);
                         exploring.replace(v.id, v, u.distance + graph.cost(u.id, v.id));
@@ -289,25 +294,236 @@ public class SearchLib {
         }
     }
 
-    /*
-     * Ex
-     */
-    public static class DepthFirstSearch {
+    public static class IterateUniformCostSearch {
 
+        private Graph graph;
+        private Vertex s;
+        private PriorityQueue exploring = new PriorityQueue();
+
+        public IterateUniformCostSearch(Graph g, int source) {
+            this.graph = g.clone();
+
+            s = graph.vertex(source);
+            s.predecessor = null;
+            s.distance = 0;
+            s.color = Vertex.Color.Gray;
+            exploring.add(s, 0);
+        }
+
+        public void search(int destination) {
+            Vertex u = exploring.pop();
+
+            if (u.id == destination) {
+                Graph.printPath(u);
+                return;
+            }
+
+            Vertex[] adj = graph.adjList(u.id);
+            for (Vertex v : adj) {
+                if (v.color == Vertex.Color.White) {
+                    v.color = Vertex.Color.Gray;
+                    v.distance = u.distance + graph.cost(u.id, v.id);
+                    v.predecessor = u;
+
+                    exploring.add(v, v.distance);
+                }
+                // We are looking for a path to 'v', if the frontier already contains 'v' with a higher cost,
+                // add the updated cost to it
+                else if (exploring.cost(v.id) > u.distance + graph.cost(u.id, v.id)) {
+                    v.predecessor = u;
+                    v.distance = u.distance + graph.cost(u.id, v.id);
+                    exploring.replace(v.id, v, u.distance + graph.cost(u.id, v.id));
+                }
+                u.color = Vertex.Color.Black;
+            }
+
+        }
+
+        public boolean overlaps(IterateUniformCostSearch ucs) {
+            // Search to see if explored sets overlap
+            for (int i = 0; i < graph.numVertices; i++) {
+                if (graph.vertices[i].color == Vertex.Color.Black
+                        && ucs.graph.vertices[i].color == Vertex.Color.Black) return true;
+            }
+
+            return false;
+        }
     }
 
+    /*
+     * Searches deepest depth first
+     *
+     * Pretty much trash, don't use this algorithm
+     * Complete: No: Can get in loops
+     * Time & Space: O(b^m) & O(bm)
+     * Optimal: No
+     */
+    public static class DepthFirstSearch {
+        private Graph graph;
 
+        public DepthFirstSearch(Graph g) {
+            this.graph = g.clone();
+        }
+
+        public void search(int source, int destination) {
+            Stack<Vertex> chain = new Stack<>();
+
+            Vertex s = graph.vertex(source);
+            s.distance = 0;
+            s.color = Vertex.Color.Black;
+            chain.push(s);
+
+            while (!chain.isEmpty()) {
+                Vertex u = chain.pop();
+
+                System.out.println(u.id + " "); // traverse
+
+                if (u.id == destination) {
+                    Graph.printPath(u);
+                    return;
+                }
+
+                for (Vertex v : graph.adjList(u.id)) {
+                    if (v.color != Vertex.Color.Black) {
+                        v.distance = u.distance + 1;
+                        v.predecessor = u;
+                        v.color = Vertex.Color.Black;
+                        chain.push(v);
+                    }
+                }
+            }
+        }
+    }
+
+    public static class RecursiveDFS {
+        private Graph graph;
+        private int destination;
+
+        public RecursiveDFS(Graph g) {
+            this.graph = g.clone();
+        }
+
+        // Exactly the same behavior as DFS
+        public void search(int source, int destination, int limit) {
+            this.destination = destination;
+            graph.vertex(source).distance = 0;
+            recurse(source, limit);
+        }
+
+        // Optimal and complete, same runtime resources
+        public void iterativeSearch(int source, int destination) {
+            for (int i = 0; i < Integer.MAX_VALUE; i++) {
+                try {
+                    search(source, destination, i);
+                } catch (Exception e) {
+                    // Couldn't find a solution at the specified limit
+                }
+            }
+        }
+
+        private boolean recurse(int id, int limit) {
+            Vertex u = graph.vertex(id);
+            u.color = Vertex.Color.Black;
+
+            if (id == destination) {
+                Graph.printPath(u);
+                return true;
+            } else if (limit == 0) {
+                throw new RuntimeException("Limit reached!");
+            }
+
+            for (Vertex v : graph.adjList(id)) {
+                if (v.color != Vertex.Color.Black) {
+                    v.distance = u.distance + 1;
+                    v.predecessor = u;
+
+                    if (recurse(v.id, limit - 1)) return true;
+                }
+            }
+
+            throw new RuntimeException("Could not find ");
+        }
+    }
+
+    public static class BidirectionalSearch {
+
+        private Graph g;
+
+        public BidirectionalSearch(Graph g) {
+            this.g = g.clone();
+        }
+
+        public void search(int source, int destination) {
+            IterateUniformCostSearch s1 = new IterateUniformCostSearch(g.clone(), source);
+            IterateUniformCostSearch s2 = new IterateUniformCostSearch(g.clone(), destination);
+
+            boolean flip = false;
+
+            while(true) {
+                flip = !flip;
+
+                if(flip) s1.search(destination);
+                else s2.search(source);
+
+                if(s1.overlaps(s2)) {
+                    System.out.println("FOUND SOLUTION");
+                    return;
+                }
+            }
+
+        }
+    }
 
     public static void main(String[] args) {
         // Example from page 86
-        Graph g = new Graph(5);
-        g.addTwoWayEdge(0, 1, 99);
-        g.addTwoWayEdge(0, 2, 80);
-        g.addTwoWayEdge(2, 3, 97);
-        g.addTwoWayEdge(3, 4, 101);
-        g.addTwoWayEdge(1, 4, 211);
+//        Graph g = new Graph(5);
+//        g.addTwoWayEdge(0, 1, 99);
+//        g.addTwoWayEdge(0, 2, 80);
+//        g.addTwoWayEdge(2, 3, 97);
+//        g.addTwoWayEdge(3, 4, 101);
+//        g.addTwoWayEdge(1, 4, 211);
+//
+//        new RecursiveDFS(g).search(0, 4, 3);
 
-        new UniformCostSearch(g).search(0, 4);
+        // Example from HW2, A = 0, B = 1, so forth
+        HashMap<Character, Integer> v = new HashMap<>();
+        v.put('A', 0);
+        v.put('B', 1);
+        v.put('C', 2);
+        v.put('D', 3);
+        v.put('E', 4);
+        v.put('F', 5);
+        v.put('G', 6);
+        v.put('H', 7);
+        v.put('I', 8);
+        v.put('J', 9);
+        v.put('K', 10);
+        v.put('L', 11);
+        v.put('M', 12);
+
+        Graph g = new Graph(13);
+        g.addTwoWayEdge(v.get('A'), v.get('B'), 2);
+        g.addTwoWayEdge(v.get('A'), v.get('C'), 2);
+        g.addTwoWayEdge(v.get('A'), v.get('E'), 2);
+        g.addTwoWayEdge(v.get('B'), v.get('D'), 2);
+        g.addTwoWayEdge(v.get('B'), v.get('G'), 2);
+        g.addTwoWayEdge(v.get('C'), v.get('F'), 2);
+        g.addTwoWayEdge(v.get('E'), v.get('H'), 2);
+        g.addTwoWayEdge(v.get('E'), v.get('F'), 2);
+        g.addTwoWayEdge(v.get('H'), v.get('K'), 2);
+        g.addTwoWayEdge(v.get('F'), v.get('K'), 2);
+        g.addTwoWayEdge(v.get('G'), v.get('J'), 2);
+        g.addTwoWayEdge(v.get('E'), v.get('G'), 2);
+        g.addTwoWayEdge(v.get('D'), v.get('I'), 2);
+        g.addTwoWayEdge(v.get('I'), v.get('L'), 2);
+        g.addTwoWayEdge(v.get('J'), v.get('L'), 2);
+        g.addTwoWayEdge(v.get('L'), v.get('M'), 2);
+        g.addTwoWayEdge(v.get('J'), v.get('M'), 2);
+        g.addTwoWayEdge(v.get('K'), v.get('M'), 2);
+        g.addTwoWayEdge(v.get('H'), v.get('J'), 2);
+        g.addTwoWayEdge(v.get('G'), v.get('I'), 2);
+
+
     }
 
     /*
@@ -329,8 +545,8 @@ public class SearchLib {
         }
 
         public int cost(int id) {
-            for(Tuple t : list) {
-                if(t.item.id == id) {
+            for (Tuple t : list) {
+                if (t.item.id == id) {
                     return t.cost;
                 }
             }
@@ -339,8 +555,8 @@ public class SearchLib {
         }
 
         public void replace(int id, Vertex v, int cost) {
-            for(int i = 0; i < list.size(); i++) {
-                if(list.get(i).item.id == id) {
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i).item.id == id) {
                     list.remove(i);
                     break;
                 }
@@ -353,8 +569,8 @@ public class SearchLib {
             int min = Integer.MAX_VALUE;
             int index = -1;
 
-            for(int i = 0; i < list.size(); i++) {
-                if(list.get(i).cost < min) {
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i).cost < min) {
                     min = list.get(i).cost;
                     index = i;
                 }
