@@ -513,6 +513,8 @@ public class SearchLib {
     /*
      * Informed searches
      */
+
+    // Not always optimal
     public static class GreedyBestFirstSearch {
 
         private Graph graph;
@@ -551,10 +553,10 @@ public class SearchLib {
                     }
                     // We are looking for a path to 'v', if the frontier already contains 'v' with a higher cost,
                     // add the updated cost to it
-                    else if (exploring.cost(v.id) > u.distance + graph.cost(u.id, v.id)) {
+                    else if (exploring.cost(v.id) > heuristicTable.get(v.id)) {
                         v.predecessor = u;
                         v.distance = u.distance + graph.cost(u.id, v.id);
-                        exploring.replace(v.id, v, u.distance + graph.cost(u.id, v.id));
+                        exploring.replace(v.id, v, heuristicTable.get(v.id));
                     }
                     u.color = Vertex.Color.Black;
                 }
@@ -562,7 +564,54 @@ public class SearchLib {
         }
     }
 
+    public static class AStarSearch {
 
+        private Graph graph;
+        private HashMap<Integer, Integer> heuristicTable;
+
+        public AStarSearch(Graph g, HashMap<Integer, Integer> heuristicTable) {
+            this.graph = g.clone();
+            this.heuristicTable = heuristicTable;
+        }
+
+        public void search(int source, int destination) {
+            Vertex s = graph.vertex(source);
+            s.predecessor = null;
+            s.distance = 0;
+            s.color = Vertex.Color.Gray;
+
+            PriorityQueue exploring = new PriorityQueue();
+            exploring.add(s, 0);
+
+            while (!exploring.isEmpty()) {
+                Vertex u = exploring.pop();
+
+                if (u.id == destination) {
+                    Graph.printPath(u);
+                    return;
+                }
+
+                Vertex[] adj = graph.adjList(u.id);
+                for (Vertex v : adj) {
+                    if (v.color == Vertex.Color.White) {
+                        v.color = Vertex.Color.Gray;
+                        v.distance = u.distance + graph.cost(u.id, v.id);
+                        v.predecessor = u;
+
+                        exploring.add(v, heuristicTable.get(v.id) + v.distance);
+                    }
+                    // We are looking for a path to 'v', if the frontier already contains 'v' with a higher cost,
+                    // add the updated cost to it
+                    else if (exploring.cost(v.id) > u.distance + graph.cost(u.id, v.id) + heuristicTable.get(v.id)) {
+                        v.predecessor = u;
+                        v.distance = u.distance + graph.cost(u.id, v.id);
+                        exploring.replace(v.id, v, u.distance + graph.cost(u.id, v.id) + heuristicTable.get(v.id));
+                    }
+                    u.color = Vertex.Color.Black;
+                }
+            }
+        }
+    }
 
     public static void main(String[] args) {
         // Example from page 86
@@ -615,7 +664,7 @@ public class SearchLib {
 //
 //        new BidirectionalSearch(g).search(v, 0, 12);
 
-        // Cities problem, commonly used by the book
+        // Cities problem, commonly used by the book pg 70
         Graph g = new Graph(20);
         g.addTwoWayEdge(0, 1, 118);
         g.addTwoWayEdge(0, 2, 75);
@@ -663,6 +712,8 @@ public class SearchLib {
         heuristics.put(14, 80);
         heuristics.put(17, 199);
         heuristics.put(2, 374);
+
+        new AStarSearch(g, heuristics).search(0, 13);
 
     }
 
