@@ -315,6 +315,8 @@ public class SearchLib {
                     }
                     u.color = Vertex.Color.Black;
                 }
+
+                System.out.println("Fringe: "+exploring.toString());
             }
         }
     }
@@ -593,6 +595,10 @@ public class SearchLib {
 
                 Vertex[] adj = graph.adjList(u.id);
                 for (Vertex v : adj) {
+                    if(heuristicTable.get(u.id) > graph.cost(u.id, v.id) + heuristicTable.get(v.id)) {
+                        throw new RuntimeException("Not consistent from "+u.id+" , "+v.id+"!");
+                    }
+
                     if (v.color == Vertex.Color.White) {
                         v.color = Vertex.Color.Gray;
                         v.distance = u.distance + graph.cost(u.id, v.id);
@@ -608,7 +614,13 @@ public class SearchLib {
                         exploring.replace(v.id, v, u.distance + graph.cost(u.id, v.id) + heuristicTable.get(v.id));
                     }
                     u.color = Vertex.Color.Black;
+
+
                 }
+
+                // Print the fringe
+                System.out.print("Fringe: ");
+                System.out.println(exploring.toString());
             }
         }
     }
@@ -665,56 +677,77 @@ public class SearchLib {
 //        new BidirectionalSearch(g).search(v, 0, 12);
 
         // Cities problem, commonly used by the book pg 70
-        Graph g = new Graph(20);
-        g.addTwoWayEdge(0, 1, 118);
-        g.addTwoWayEdge(0, 2, 75);
-        g.addTwoWayEdge(2, 3, 71);
-        g.addTwoWayEdge(3, 4, 151);
-        g.addTwoWayEdge(1, 5, 111);
-        g.addTwoWayEdge(5, 6, 70);
-        g.addTwoWayEdge(6, 7, 75);
-        g.addTwoWayEdge(7, 8, 120);
-        g.addTwoWayEdge(8, 9, 146);
-        g.addTwoWayEdge(9, 4, 80);
-        g.addTwoWayEdge(8, 11, 138);
-        g.addTwoWayEdge(0, 4, 140);
-        g.addTwoWayEdge(4, 10, 99);
-        g.addTwoWayEdge(9, 11, 97);
-        g.addTwoWayEdge(10, 13, 211);
-        g.addTwoWayEdge(11, 13, 101);
-        g.addTwoWayEdge(13, 12, 90);
-        g.addTwoWayEdge(13, 14, 85);
-        g.addTwoWayEdge(14, 15, 98);
-        g.addTwoWayEdge(15, 16, 86);
-        g.addTwoWayEdge(14, 17, 142);
-        g.addTwoWayEdge(17, 18, 92);
-        g.addTwoWayEdge(18, 19, 87);
+//        Graph g = new Graph(20);
+//        g.addTwoWayEdge(0, 1, 118);
+//        g.addTwoWayEdge(0, 2, 75);
+//        g.addTwoWayEdge(2, 3, 71);
+//        g.addTwoWayEdge(3, 4, 151);
+//        g.addTwoWayEdge(1, 5, 111);
+//        g.addTwoWayEdge(5, 6, 70);
+//        g.addTwoWayEdge(6, 7, 75);
+//        g.addTwoWayEdge(7, 8, 120);
+//        g.addTwoWayEdge(8, 9, 146);
+//        g.addTwoWayEdge(9, 4, 80);
+//        g.addTwoWayEdge(8, 11, 138);
+//        g.addTwoWayEdge(0, 4, 140);
+//        g.addTwoWayEdge(4, 10, 99);
+//        g.addTwoWayEdge(9, 11, 97);
+//        g.addTwoWayEdge(10, 13, 211);
+//        g.addTwoWayEdge(11, 13, 101);
+//        g.addTwoWayEdge(13, 12, 90);
+//        g.addTwoWayEdge(13, 14, 85);
+//        g.addTwoWayEdge(14, 15, 98);
+//        g.addTwoWayEdge(15, 16, 86);
+//        g.addTwoWayEdge(14, 17, 142);
+//        g.addTwoWayEdge(17, 18, 92);
+//        g.addTwoWayEdge(18, 19, 87);
+//
+//        HashMap<Integer, Integer> heuristics = new HashMap<>();
+//
+//        heuristics.put(0, 366);
+//        heuristics.put(13, 0);
+//        heuristics.put(8, 160);
+//        heuristics.put(7, 242);
+//        heuristics.put(16, 161);
+//        heuristics.put(10, 176);
+//        heuristics.put(12, 77);
+//        heuristics.put(15, 151);
+//        heuristics.put(18, 226);
+//        heuristics.put(5, 244);
+//        heuristics.put(6, 241);
+//        heuristics.put(19, 234);
+//        heuristics.put(3, 380);
+//        heuristics.put(11, 100);
+//        heuristics.put(9, 193);
+//        heuristics.put(4, 253);
+//        heuristics.put(1, 329);
+//        heuristics.put(14, 80);
+//        heuristics.put(17, 199);
+//        heuristics.put(2, 374);
+//
+//        new AStarSearch(g, heuristics).search(0, 13);
 
-        HashMap<Integer, Integer> heuristics = new HashMap<>();
+        Graph g = new Graph(7);
+        g.addEdge(0, 1, 2);
+        g.addEdge(1, 2, 3);
+        g.addEdge(3, 6, 9);
+        g.addEdge(0, 3, 4);
+        g.addEdge(0, 4, 7);
+        g.addEdge(2, 4, 1);
+        g.addEdge(2, 3, 3);
+        g.addEdge(4, 5, 2);
+        g.addEdge(5, 6, 4);
 
-        heuristics.put(0, 366);
-        heuristics.put(13, 0);
-        heuristics.put(8, 160);
-        heuristics.put(7, 242);
-        heuristics.put(16, 161);
-        heuristics.put(10, 176);
-        heuristics.put(12, 77);
-        heuristics.put(15, 151);
-        heuristics.put(18, 226);
-        heuristics.put(5, 244);
-        heuristics.put(6, 241);
-        heuristics.put(19, 234);
-        heuristics.put(3, 380);
-        heuristics.put(11, 100);
-        heuristics.put(9, 193);
-        heuristics.put(4, 253);
-        heuristics.put(1, 329);
-        heuristics.put(14, 80);
-        heuristics.put(17, 199);
-        heuristics.put(2, 374);
-
-        new AStarSearch(g, heuristics).search(0, 13);
-
+        new UniformCostSearch(g).search(0, 6);
+//
+//        HashMap<Integer, Integer> h = new HashMap<>();
+//        h.put(0, 7);
+//        h.put(1, 6);
+//        h.put(2, 2);
+//        h.put(3, 1);
+//        h.put(4, 4);
+//
+//        new AStarSearch(g, h).search(0, 4);
     }
 
     /*
@@ -773,6 +806,16 @@ public class SearchLib {
         public static class Tuple {
             Vertex item;
             int cost;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            for(Tuple t : list) {
+                builder.append(t.item.id).append(" ");
+            }
+
+            return builder.toString();
         }
 
     }
