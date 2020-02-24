@@ -96,7 +96,7 @@ public class SearchLib {
             ArrayList<Vertex> vertices = new ArrayList<>();
 
             for(int i = 0; i < numVertices; i++) {
-                if(matrix[index][0] < Integer.MAX_VALUE && i != index) { // a path exists, ignore path to self
+                if(matrix[index][i] < Integer.MAX_VALUE && i != index) { // a path exists, ignore path to self
                     vertices.add(this.vertices[i]);
                 }
             }
@@ -231,10 +231,16 @@ public class SearchLib {
     }
 
     /*
-     * Like breadth first with three modifications
+     * Like breadth first but with three modifications
      * 1) Priority queue instead of FIFO queue to expand lowest cost node first
      * 2) Goal node must be tested when expanded rather than discovered (in case something is more optimal)
-     * 3) A bit obscure, but checks for a more optimal path in frontier
+     * 3) If a different optimal route to the frontier is found, it needs to be replaced
+     *
+     * Searches given depth before searching next, however, chooses the lowest cost node in frontier to explore first.
+     * Note - the number of path steps does not get factored in AT ALL
+     * Complete: As long as branching factor is finite, can get broken if it gets into a 0-cost loop
+     * Time & Space: O(b^d + A constant) At best: b^d+1 Can be much worse than BFS though
+     * Optimal: Yes
      */
     public static class UniformCostSearch {
 
@@ -268,11 +274,13 @@ public class SearchLib {
                         v.distance = u.distance + graph.cost(u.id, v.id);
                         v.predecessor = u;
 
-                        exploring.add(v, u.distance);
+                        exploring.add(v, v.distance);
                     }
                     // We are looking for a path to 'v', if the frontier already contains 'v' with a higher cost,
                     // add the updated cost to it
                     else if(exploring.cost(v.id) > u.distance + graph.cost(u.id, v.id)) {
+                        v.predecessor = u;
+                        v.distance = u.distance + graph.cost(u.id, v.id);
                         exploring.replace(v.id, v, u.distance + graph.cost(u.id, v.id));
                     }
                     u.color = Vertex.Color.Black;
@@ -281,16 +289,25 @@ public class SearchLib {
         }
     }
 
+    /*
+     * Ex
+     */
+    public static class DepthFirstSearch {
+
+    }
+
+
+
     public static void main(String[] args) {
-        Graph g = new Graph(4);
+        // Example from page 86
+        Graph g = new Graph(5);
+        g.addTwoWayEdge(0, 1, 99);
+        g.addTwoWayEdge(0, 2, 80);
+        g.addTwoWayEdge(2, 3, 97);
+        g.addTwoWayEdge(3, 4, 101);
+        g.addTwoWayEdge(1, 4, 211);
 
-        g.addEdge(0, 2);
-        g.addEdge(2, 0);
-        g.addEdge(0, 1);
-        g.addEdge(1, 2);
-        g.addEdge(2, 3);
-
-        new BreadthFirstSearch(g).traverse(2);
+        new UniformCostSearch(g).search(0, 4);
     }
 
     /*
