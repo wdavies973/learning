@@ -7,8 +7,6 @@ package ai;
 // depth - distance from the top
 // height - distance from the bottom
 
-import umn4041.GraphLib;
-
 import java.util.*;
 
 public class SearchLib {
@@ -17,6 +15,10 @@ public class SearchLib {
      * Graph representations
      */
     // vertex id = index
+    public static int c(char c) {
+        return c - 'A';
+    }
+
     public interface Searchable {
         Vertex vertex(int index);
 
@@ -576,7 +578,7 @@ public class SearchLib {
             this.heuristicTable = heuristicTable;
         }
 
-        public void search(int source, int destination) {
+        public void search(int source, int destination, HashMap<Integer, String> friendlyNames) {
             Vertex s = graph.vertex(source);
             s.predecessor = null;
             s.distance = 0;
@@ -587,6 +589,10 @@ public class SearchLib {
 
             while (!exploring.isEmpty()) {
                 Vertex u = exploring.pop();
+
+                if(friendlyNames != null) {
+                    System.out.println("Exploring "+friendlyNames.get(u.id));
+                }
 
                 if (u.id == destination) {
                     Graph.printPath(u);
@@ -614,18 +620,63 @@ public class SearchLib {
                         exploring.replace(v.id, v, u.distance + graph.cost(u.id, v.id) + heuristicTable.get(v.id));
                     }
                     u.color = Vertex.Color.Black;
-
-
                 }
 
                 // Print the fringe
                 System.out.print("Fringe: ");
-                System.out.println(exploring.toString());
+                if(friendlyNames != null) {
+                    System.out.println(exploring.toStringWithReplacement(friendlyNames));
+                } else {
+                    System.out.println(exploring.toString());
+                }
             }
         }
     }
 
+    public static class BasicHillClimb {
+        private Graph g;
+        private HashMap<Integer, Integer> h;
+
+        public BasicHillClimb(Graph g, HashMap<Integer, Integer> h) {
+            this.g = g.clone();
+            this.h = h;
+        }
+
+        public void search(int source, int destination) {
+
+            int state = h.get(source);
+
+            Vertex v = g.vertex(source);
+
+            while(true) {
+
+
+                int min = -1;
+                int id = -1;
+
+                for(Vertex i : g.adjList(v.id)) {
+                    if(h.get(i.id) < min) {
+                        min = h.get(i.id);
+                        id = i.id;
+                    }
+                }
+
+                System.out.println("Visited: "+id);
+
+                v = g.vertex(id);
+
+                if(min > state) {
+                    return;
+                }
+            }
+
+
+        }
+    }
+
     public static void main(String[] args) {
+
+
         // Example from page 86
 //        Graph g = new Graph(5);
 //        g.addTwoWayEdge(0, 1, 99);
@@ -727,27 +778,44 @@ public class SearchLib {
 //
 //        new AStarSearch(g, heuristics).search(0, 13);
 
-        Graph g = new Graph(7);
-        g.addEdge(0, 1, 2);
-        g.addEdge(1, 2, 3);
-        g.addEdge(3, 6, 9);
-        g.addEdge(0, 3, 4);
-        g.addEdge(0, 4, 7);
-        g.addEdge(2, 4, 1);
-        g.addEdge(2, 3, 3);
-        g.addEdge(4, 5, 2);
-        g.addEdge(5, 6, 4);
-
-        new UniformCostSearch(g).search(0, 6);
+//        Graph g = new Graph(10);
+//        g.addTwoWayEdge(0, 1, 80);
+//        g.addTwoWayEdge(1, 2, 85);
+//        g.addTwoWayEdge(2, 3, 173);
+//        g.addTwoWayEdge(3, 4, 502);
+//        g.addTwoWayEdge(4, 8, 84);
+//        g.addTwoWayEdge(8, 0, 250);
+//        g.addTwoWayEdge(2, 7, 217);
+//        g.addTwoWayEdge(7, 9, 186);
+//        g.addTwoWayEdge(7, 5, 103);
+//        g.addTwoWayEdge(5, 6, 183);
+//        g.addTwoWayEdge(5, 4, 167);
 //
 //        HashMap<Integer, Integer> h = new HashMap<>();
-//        h.put(0, 7);
-//        h.put(1, 6);
-//        h.put(2, 2);
-//        h.put(3, 1);
-//        h.put(4, 4);
+//        h.put(0, 430);
+//        h.put(1, 370);
+//        h.put(2, 300);
+//        h.put(3, 200);
+//        h.put(4, 320);
+//        h.put(5, 160);
+//        h.put(6, 0);
+//        h.put(7, 90);
+//        h.put(8, 350);
+//        h.put(9, 260);
 //
-//        new AStarSearch(g, h).search(0, 4);
+//        HashMap<Integer, String> f = new HashMap<>();
+//        f.put(0, "Karlsruhe");
+//        f.put(1, "Mannheim");
+//        f.put(2, "Frankfurt");
+//        f.put(3, "Kassel");
+//        f.put(4, "Munchen");
+//        f.put(5, "Nurnberg");
+//        f.put(6, "Stuttgart");
+//        f.put(7, "Wurzburg");
+//        f.put(8, "Augsburg");
+//        f.put(9, "Erfurt");
+//
+//        new AStarSearch(g, h).search(0, 6, f);
     }
 
     /*
@@ -812,7 +880,16 @@ public class SearchLib {
         public String toString() {
             StringBuilder builder = new StringBuilder();
             for(Tuple t : list) {
-                builder.append(t.item.id).append(" ");
+                builder.append(t.item.id).append("(").append(t.cost).append(") ");
+            }
+
+            return builder.toString();
+        }
+
+        public String toStringWithReplacement(HashMap<Integer, String> index) {
+            StringBuilder builder = new StringBuilder();
+            for(Tuple t : list) {
+                builder.append(index.get(t.item.id)).append("(").append(t.cost).append(") ");
             }
 
             return builder.toString();
