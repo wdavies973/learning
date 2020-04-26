@@ -1,8 +1,5 @@
-package mining;
+package umn.mining;
 
-import sun.plugin2.os.windows.SECURITY_ATTRIBUTES;
-
-import javax.xml.soap.SAAJMetaFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 

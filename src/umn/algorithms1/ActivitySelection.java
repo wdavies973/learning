@@ -1,6 +1,4 @@
-package umn4041;
-
-import org.omg.PortableInterceptor.INACTIVE;
+package umn.algorithms1;
 
 import java.util.HashSet;
 import java.util.Set;

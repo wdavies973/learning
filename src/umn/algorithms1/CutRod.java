@@ -1,4 +1,4 @@
-package umn4041;
+package umn.algorithms1;
 
 /*
  * For a rod of length n, and prices for each length P1, P2, P(n),

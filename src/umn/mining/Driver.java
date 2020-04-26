@@ -1,4 +1,4 @@
-package mining;
+package umn.mining;
 
 public class Driver {
 

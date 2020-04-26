@@ -1,4 +1,4 @@
-package umn4041;
+package umn.algorithms1;
 
 import java.util.Arrays;
 import java.util.Random;

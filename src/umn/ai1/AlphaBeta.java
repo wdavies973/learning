@@ -1,4 +1,4 @@
-package ai;
+package umn.ai1;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

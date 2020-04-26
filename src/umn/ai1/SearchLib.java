@@ -1,4 +1,4 @@
-package ai;
+package umn.ai1;
 
 // Definitions
 // Frontier/fringe - leaf nodes available for expansion

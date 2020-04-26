@@ -1,4 +1,4 @@
-package mining;
+package umn.mining;
 
 import java.util.ArrayList;
 

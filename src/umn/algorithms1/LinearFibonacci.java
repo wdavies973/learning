@@ -1,4 +1,4 @@
-package umn4041;
+package umn.algorithms1;
 
 public class LinearFibonacci {
 

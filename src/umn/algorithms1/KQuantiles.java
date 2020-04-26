@@ -1,9 +1,6 @@
-package umn4041;
+package umn.algorithms1;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.stream.Collectors;
 
 /*
  * Find k quantiles of an n-element set

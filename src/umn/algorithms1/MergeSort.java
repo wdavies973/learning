@@ -1,6 +1,5 @@
-package umn4041;
+package umn.algorithms1;
 
-import java.lang.reflect.Array;
 import java.util.Comparator;
 
 public class MergeSort {
