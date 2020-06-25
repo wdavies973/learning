@@ -628,9 +628,9 @@ public class SearchLib {
 
                 Vertex[] adj = graph.adjList(u.id);
                 for(Vertex v : adj) {
-                    if(heuristicTable.get(u.id) > graph.cost(u.id, v.id) + heuristicTable.get(v.id)) {
-                        throw new RuntimeException("Not consistent from " + u.id + " , " + v.id + "!");
-                    }
+//                    if(heuristicTable.get(u.id) > graph.cost(u.id, v.id) + heuristicTable.get(v.id)) {
+//                        throw new RuntimeException("Not consistent from " + u.id + " , " + v.id + "!");
+//                    }
 
                     if(v.color == Vertex.Color.White) {
                         v.color = Vertex.Color.Gray;
@@ -771,54 +771,86 @@ public class SearchLib {
                 System.out.println();
             }
         }
-
-
     }
 
     public static void main(String[] args) {
+        Graph g = new Graph(7);
 
-        Graph g = new Graph(10);
-        g.addTwoWayEdge(c('a'), c('b'), 0);
-        g.addTwoWayEdge(c('b'), c('e'), 0);
-        g.addTwoWayEdge(c('e'), c('h'), 0);
-        g.addTwoWayEdge(c('h'), c('i'), 0);
-        g.addTwoWayEdge(c('a'), c('d'), 0);
-        g.addTwoWayEdge(c('d'), c('g'), 0);
-        g.addTwoWayEdge(c('g'), c('j'), 0);
-        g.addTwoWayEdge(c('a'), c('c'), 0);
-        g.addTwoWayEdge(c('c'), c('e'), 0);
-        g.addTwoWayEdge(c('b'), c('f'), 0);
-        g.addTwoWayEdge(c('f'), c('i'), 0);
-        g.addTwoWayEdge(c('f'), c('g'), 0);
-        g.addTwoWayEdge(c('c'), c('g'), 0);
-        g.addTwoWayEdge(c('e'), c('i'), 0);
+        g.addEdge(c('a'), c('b'), 11);
+        g.addEdge(c('a'), c('d'), 7);
+        g.addEdge(c('d'), c('b'), 2);
+        g.addEdge(c('a'), c('e'), 13);
+        g.addEdge(c('d'), c('e'), 14);
+        g.addEdge(c('b'), c('e'), 1);
+        g.addEdge(c('b'), c('c'), 6);
+        g.addEdge(c('e'), c('c'), 3);
+        g.addEdge(c('c'), c('f'), 4);
+        g.addEdge(c('e'), c('f'), 8);
+        g.addEdge(c('e'), c('g'), 15);
+        g.addEdge(c('f'), c('g'), 9);
 
-        ArrayList<Vertex> explored = new ArrayList<>();
+        HashMap<Integer, Integer> h = new HashMap<>();
+        h.put(c('a'), 27);
+        h.put(c('b'), 16);
+        h.put(c('c'), 10);
+        h.put(c('d'), 22);
+        h.put(c('e'), 15);
+        h.put(c('f'), 8);
+        h.put(c('g'), 0);
 
-        LinkedList<Vertex> queue = new LinkedList<>();
+        HashMap<Integer, String> friendly = new HashMap<>();
+        friendly.put(c('a'), "a");
+        friendly.put(c('b'), "b");
+        friendly.put(c('c'), "c");
+        friendly.put(c('d'), "d");
+        friendly.put(c('e'), "e");
+        friendly.put(c('f'), "f");
+        friendly.put(c('g'), "g");
+        
+        new AStarSearch(g, h).search(c('a'), c('g'), friendly);
 
-        queue.add(g.vertex(0));
-
-        int depth = 0;
-
-        int count = 0;
-
-        for(int i = 0; count < 11; i++) {
-            Vertex v = queue.pop();
-
-            if(depth != v.depth) {
-                System.out.println();
-                depth = v.depth;
-
-                count++;
-            }
-
-            queue.addAll(Arrays.asList(g.adjListWithDepth(v.id, depth + 1)));
-
-            System.out.print(i(v.id)+" ");
-
-            explored.add(v);
-        }
+//        Graph g = new Graph(10);
+//        g.addTwoWayEdge(c('a'), c('b'), 0);
+//        g.addTwoWayEdge(c('b'), c('e'), 0);
+//        g.addTwoWayEdge(c('e'), c('h'), 0);
+//        g.addTwoWayEdge(c('h'), c('i'), 0);
+//        g.addTwoWayEdge(c('a'), c('d'), 0);
+//        g.addTwoWayEdge(c('d'), c('g'), 0);
+//        g.addTwoWayEdge(c('g'), c('j'), 0);
+//        g.addTwoWayEdge(c('a'), c('c'), 0);
+//        g.addTwoWayEdge(c('c'), c('e'), 0);
+//        g.addTwoWayEdge(c('b'), c('f'), 0);
+//        g.addTwoWayEdge(c('f'), c('i'), 0);
+//        g.addTwoWayEdge(c('f'), c('g'), 0);
+//        g.addTwoWayEdge(c('c'), c('g'), 0);
+//        g.addTwoWayEdge(c('e'), c('i'), 0);
+//
+//        ArrayList<Vertex> explored = new ArrayList<>();
+//
+//        LinkedList<Vertex> queue = new LinkedList<>();
+//
+//        queue.add(g.vertex(0));
+//
+//        int depth = 0;
+//
+//        int count = 0;
+//
+//        for(int i = 0; count < 11; i++) {
+//            Vertex v = queue.pop();
+//
+//            if(depth != v.depth) {
+//                System.out.println();
+//                depth = v.depth;
+//
+//                count++;
+//            }
+//
+//            queue.addAll(Arrays.asList(g.adjListWithDepth(v.id, depth + 1)));
+//
+//            System.out.print(i(v.id)+" ");
+//
+//            explored.add(v);
+//        }
 
 //        Graph g = new Graph(10);
 //        g.addTwoWayEdge(c('a'), c('b'), 0);
