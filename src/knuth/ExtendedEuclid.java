@@ -17,6 +17,11 @@ public class ExtendedEuclid {
             int q = c / d;
             int r = c % d;
             // c = qd + r - definition of division
+            // 0 <= r < d
+
+            // The following hold true:
+            // a'm + b'n = c
+            // am + bn = d
 
             if(r == 0) {
                 System.out.println(a+"m + "+b+"n"+" = "+d);
@@ -27,19 +32,22 @@ public class ExtendedEuclid {
             d = r;
             int t = aPrime; // temp var
 
-            // adj a
+            // adjust a
             aPrime = a;
             a = t - q * a;
 
-            // adj b
+            // adjust b
             t = bPrime;
             bPrime = b;
             b = t - q * b;
         }
     }
 
+    // Well, how do I know its correct? For all m & n
+
+
     public static void main(String[] args) {
-        extendedEuclid(1769, 551);
+        extendedEuclid(20, 30);
     }
 
 }

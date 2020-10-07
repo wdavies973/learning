@@ -31,6 +31,16 @@ public class MatrixChain {
             values = new int[rows][columns];
         }
 
+        static Matrix identity(int rows, int cols) {
+            Matrix m = new Matrix(rows, cols);
+            for(int row = 0; row < rows; row++) {
+                for(int col = 0; col < cols; col++) {
+                    if(col == row) m.set(row + 1, col + 1, 1);
+                }
+            }
+            return m;
+        }
+
         public Matrix(int[][] values) {
             this.values = values;
             this.rows = values.length;
@@ -38,15 +48,15 @@ public class MatrixChain {
         }
 
         public int get(int row, int col) {
-            return values[row-1][col-1];
+            return values[row - 1][col - 1];
         }
 
         public void set(int row, int col, int value) {
-            values[row-1][col-1] = value;
+            values[row - 1][col - 1] = value;
         }
 
         public void add(int row, int col, int value) {
-            values[row-1][col-1] += value;
+            values[row - 1][col - 1] += value;
         }
 
         public boolean canMultiplyWith(Matrix other) {
@@ -79,7 +89,7 @@ public class MatrixChain {
 
         @Override
         public String toString() {
-            StringBuilder builder = new StringBuilder("Size: "+getRows()+" x "+getCols()+"\n");
+            StringBuilder builder = new StringBuilder("Size: " + getRows() + " x " + getCols() + "\n");
 
             for(int row = 1; row <= getRows(); row++) {
                 for(int col = 1; col <= getCols(); col++) {
@@ -90,22 +100,39 @@ public class MatrixChain {
 
             return builder.toString();
         }
+
+        public String toLatexString() {
+            StringBuilder builder = new StringBuilder("Size: " + getRows() + " x " + getCols() + "\n");
+
+            for(int row = 1; row <= getRows(); row++) {
+                for(int col = 1; col <= getCols(); col++) {
+
+                    if(col >= row) builder.append(get(row, col)).append("&");
+                    else builder.append("&");
+                }
+                builder.append("\\\\\n");
+            }
+
+            return builder.toString();
+        }
     }
 
     /*
      * Optimally multiply a chain of matrices together
      */
-    public Matrix multiply(Matrix ... matrices) { // I refer to these as A[1], A[2], etc.
+    public Matrix multiply(Matrix... matrices) { // I refer to these as A[1], A[2], etc.
         // Verify that all matrix multiplications are valid (# of cols of first = # of rows of second)
         for(int i = 0; i < matrices.length - 1; i++) {
-            if(!matrices[i].canMultiplyWith(matrices[i+1])) {
-                throw new IllegalArgumentException("Matrix at index "+i+" cannot be multiplied with matrix at index "+(i+1));
+            if(!matrices[i].canMultiplyWith(matrices[i + 1])) {
+                throw new IllegalArgumentException("Matrix at index " + i + " cannot be multiplied with matrix at " +
+                        "index " + (i + 1));
             }
         }
 
         // The goal is to figure out an optimal parenthesization to MINIMIZE the total number of multiplications
         // The solution will still check every possible parenthesization, but will use dynamically programming
-        // to make it more efficient. This works by saving results of previously computed answers that are needed in future
+        // to make it more efficient. This works by saving results of previously computed answers that are needed in
+        // future
         // computations. If you wanted to compute the total possible number of parenthesizations, you would
         // find the Catalan number, or T(n) = 2n(Cn)/(n+1) (where Cn is combinations)
 
@@ -117,11 +144,20 @@ public class MatrixChain {
          * The m matrix stores the cost (number of multiplications) of multiplying a range of matrices together.
          * For example, m[2,3] stores the number of multiplications ops required to multiply A2 * A3
          *
+         * The s matrix stores the split that the minimal cost occurred at. For example, in the multiplication:
+         * A1 * A2 * A3 * A4
+         * split=1 would be A1 * (A2 * A3 * A4)
+         * split=3 = (A1 * A2 * A3) * A4
+         *
          * Interestingly enough, m[2,4] represents A[2] * A[3] * A[4], which can be defined in terms of a previous
          * solution, in other words, m[2,4] = min{ m[2,k] + m[k+1,4] + d(i-1) * d(k) * d(j)}, when the range is larger,
          * say m[1,4], k can have several values, so use min to select the smallest one.
+         * --> In other words, iterate through each possible split location:
+         *  If m[2,6], then check the number of multiplications at splits k=2,3,4,5,6. Take the minimum split cost.
+         * Record this in m, and record the split location in s.
          *
-         * The matrix s stores the partition (k) that lead to the smallest multiplication amount. So for example, we may have
+         * The matrix s stores the partition (k) that lead to the smallest multiplication amount. So for example, we
+         * may have
          * the resultant matrices:
          *
          * m:
@@ -186,9 +222,12 @@ public class MatrixChain {
             // Loop through all rows in the diagonal we're considering
             for(int row = 1; row <= n - l + 1; row++) {
 
-                int col = row + l - 1; // calculates the column, this is just the offset from the diagonal in the corresponding row
+                int col = row + l - 1; // calculates the column, this is just the offset from the diagonal in the
+                // corresponding row
 
                 m.set(row, col, Integer.MAX_VALUE);
+
+                StringBuilder expression = new StringBuilder("\t\\item $m[" + row + "," + col + "] = min\\{");
 
                 // This will iterate through the possible splits, or partition of the matrices
                 // provided. Let's say split = 2, that is equivalent to the parenthesization:
@@ -196,66 +235,75 @@ public class MatrixChain {
                 // The split should iterate from the row to the column, as m[i,j] defines
                 for(int split = row; split <= col - 1; split++) {
                     // Figure out the cost as factor of previous results
-                    int q = m.get(row, split) + m.get(split + 1, col) + matrices[row-1].getRows() * matrices[split-1].getCols() * matrices[col-1].getCols();
+                    int q = m.get(row, split) + m.get(split + 1, col) + matrices[row - 1].getRows() * matrices[split - 1].getCols() * matrices[col - 1].getCols();
 
-                    // If it's smaller than the current min, set it. If this is the first iteration, it will always be smaller than Integer.MAX_VALUE
+                    expression.append("m[" + row + "," + split + "] + m[" + (split + 1) +
+                            "," + col + "] + "
+                            + matrices[row - 1].getRows() + " \\cdot " + matrices[split - 1].getCols() + " \\cdot " + matrices[col - 1].getCols() + " = "+q);
+
+                    // If it's smaller than the current min, set it. If this is the first iteration, it will always
+                    // be smaller than Integer.MAX_VALUE
                     if(q < m.get(row, col)) {
                         m.set(row, col, q);
                         s.set(row, col, split);
                     }
+                    if(split != col - 1)
+                        expression.append(",\\;");
                 }
+                expression.append("\\}$, best split="+s.get(row, col)+"\n");
+                System.out.println(expression);
             }
-
         }
+
+        System.out.println(m);
+        System.out.println(s);
+
+        System.out.println("Optimal parenthesization: " + printOptimalParenthesization(s, 1, n));
 
         // Now, we're ready to perform the optimal multiplication
         return matrixChainMultiply(matrices, s, 1, n);
+    }
+
+    // Prints the optimal parenthesization, before multiplying
+    // the matrices
+    private String printOptimalParenthesization(Matrix s, int i, int j) {
+        if(i == j) return "A" + i;
+        else if(i == j - 1) return "(A" + i + " * A" + j + ")";
+
+        int k = s.get(i, j);
+        return "(" + printOptimalParenthesization(s, i, k) + " * " + printOptimalParenthesization(s, k + 1, j) + ")";
     }
 
     /*
      * i & j track the current position in s
      */
     private Matrix matrixChainMultiply(Matrix[] matrices, Matrix s, int i, int j) {
-        // Check for length of only 2
-        if(j - i + 1 == 1) return matrices[0];
-        else if(j - i + 1 == 2) return matrices[0].multiply(matrices[1]);
+        if(i == j) return matrices[i - 1];
+        else if(i == j - 1) return matrices[i - 1].multiply(matrices[j - 1]);
 
         int k = s.get(i, j);
 
-        Matrix[] left = new Matrix[k];
-        Matrix[] right = new Matrix[matrices.length - k];
-
-        // Copy over
-        System.arraycopy(matrices, 0, left, 0, k);
-        System.arraycopy(matrices, k, right, 0, matrices.length - k);
-
-        return matrixChainMultiply(left, s, i, k).multiply(matrixChainMultiply(right, s, k+1, j));
+        return matrixChainMultiply(matrices, s, i, k).multiply(matrixChainMultiply(matrices, s, k + 1, j));
     }
 
     public static void main(String[] args) {
-        Matrix A1 = new Matrix(5,4);
-        Matrix A2 = new Matrix(4, 6);
-        Matrix A3 = new Matrix(6, 2);
-        Matrix A4 = new Matrix(2, 7);
+//        Matrix A1 = new Matrix(5, 4);
+//        Matrix A2 = new Matrix(4, 6);
+//        Matrix A3 = new Matrix(6, 2);
+//        Matrix A4 = new Matrix(2, 7);
+
+        Matrix A1 = new Matrix(30,1);
+        Matrix A2 = new Matrix(1, 40);
+        Matrix A3 = new Matrix(40, 10);
+        Matrix A4 = new Matrix(10, 25);
+        Matrix A5 = new Matrix(25, 50);
+        Matrix A6 = new Matrix(50, 5);
+
+        //System.out.println(A5.canMultiplyWith(A6));
+
+        new MatrixChain().multiply(A1, A2, A3, A4, A5, A6);
 
 //        System.out.println(new MatrixChain().multiply(A1, A2, A3, A4));
-
-        int[][] multi = new int[][]{
-                {123,2,4},
-                {0,4,2},
-                {6,1,2}
-        };
-
-        int[][] multi2 = new int[][]{
-                {2,3,4},
-                {4,3,34},
-                {1,4,-78}
-        };
-
-        Matrix a = new Matrix(multi);
-        Matrix b = new Matrix(multi2);
-
-        System.out.println(new MatrixChain().multiply(a, b));
     }
 
 }
