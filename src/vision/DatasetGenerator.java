@@ -2,11 +2,16 @@ package vision;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,12 +38,23 @@ public class DatasetGenerator {
             this.g = (Graphics2D) this.img.getGraphics();
         }
 
-        public void drawResistorBase(ResistorBase rb, int x, int y) {
-            this.g.drawImage(rb.image, x, y, null);
+        public void drawResistorBase(ResistorBase rb, int x, int y, int rotation) {
+            double angle = Math.toRadians(rotation);
+
+            // Perform rotation if needed
+            if(rotation != 0) {
+                AffineTransform i = new AffineTransform();
+                i.setTransform(new AffineTransform());
+                i.translate(x, y);
+                i.rotate(angle);
+                this.g.drawImage(rb.copy(20).image, i, null);
+            } else {
+                this.g.drawImage(rb.copy(20).image, x, y, null);
+            }
 
             // Add annotation information
-            anno.append(rb.start.toAnnotation(x, y, regionId, true)).append("\n");
-            anno.append(rb.end.toAnnotation(x, y, regionId + 1, false)).append("\n");
+            anno.append(rb.start.toAnnotation(x, y, angle, regionId, true)).append("\n");
+            anno.append(rb.end.toAnnotation(x, y, angle, regionId + 1, false)).append("\n");
 
             regionId += 2;
         }
@@ -79,6 +95,55 @@ public class DatasetGenerator {
             image = ImageIO.read(file);
         }
 
+        private ResistorBase(BufferedImage image, ResistorRegion start, ResistorRegion end) {
+            this.image = image;
+            this.start = start;
+            this.end = end;
+        }
+
+        Random rnd = new Random();
+
+        public ResistorBase copy(int delta) {
+            BufferedImage copy = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+            int w = image.getWidth();
+            int h = image.getHeight();
+
+            for(int i = 0; i < w; i++) {
+                for(int j = 0; j < h; j++) {
+                    int rgb = image.getRGB(i, j);
+                    Color c = new Color(rgb);
+                    int r = c.getRed();
+                    int b = c.getBlue();
+                    int g = c.getGreen();
+
+                    if(rgb != 0) {
+                        r += rnd.nextInt(delta * 2) - delta;
+                        g += rnd.nextInt(delta * 2) - delta;
+                        b += rnd.nextInt(delta * 2) - delta;
+
+                        if(r < 0) r = 0;
+                        else if(r > 255) r = 255;
+
+                        if(b < 0) b = 0;
+                        else if(b > 255) b = 255;
+
+                        if(g < 0) g = 0;
+                        else if(g > 255) g = 255;
+                    }
+                    byte alpha = 0;
+                    if(rgb == 0) {
+                        alpha = (byte) 0;
+                    } else alpha = (byte) (254 % 0xff);
+
+                    int mc = (alpha << 24) | 0x00ffffff;
+                    copy.setRGB(i, j, new Color(r, g, b).getRGB() & mc);
+                }
+            }
+
+            return new ResistorBase(copy, start, end);
+        }
+
         @Override
         public String toString() {
             return "ResistorBase{" +
@@ -98,17 +163,38 @@ public class DatasetGenerator {
             this.y = Arrays.asList(y);
         }
 
-        public String toAnnotation(int startX, int startY, int id, boolean side) {
+        private Point transform(int px, int py, double angle, int x, int y) {
+            double s = Math.sin(angle);
+            double c = Math.cos(angle);
+
+            x -= px;
+            y -= py;
+
+            double xNew = x * c - y * s;
+            double yNew = x * s + y * c;
+
+            x = (int) Math.round(xNew + px);
+            y = (int) Math.round(yNew + py);
+            return new Point(x, y);
+        }
+
+        public String toAnnotation(int startX, int startY, double rotation, int id, boolean side) {
+            // Transform all points
+            ArrayList<Point> transformed = new ArrayList<>();
+            for(int i = 0; i < x.size(); i++) {
+                transformed.add(transform(startX, startY, rotation, x.get(i) + startX, y.get(i) + startY));
+            }
+
             StringBuilder b = new StringBuilder();
             b.append("#####").append(",").append("^^^^^").append(",\"{}\",$$$$$,").append(id).append(",");
             b.append("\"{\"\"name\"\":\"\"polygon\"\",\"\"all_points_x\"\":[");
-            for(int i = 0; i < x.size(); i++) {
-                b.append(x.get(i) + startX);
+            for(int i = 0; i < transformed.size(); i++) {
+                b.append(transformed.get(i).x);
                 if(i != x.size() - 1) b.append(",");
             }
             b.append("],\"\"all_points_y\"\":[");
-            for(int i = 0; i < y.size(); i++) {
-                b.append(y.get(i) + startY);
+            for(int i = 0; i < transformed.size(); i++) {
+                b.append(transformed.get(i).y);
                 if(i != y.size() - 1) b.append(",");
             }
             b.append("]}\",\"{\"\"side\"\":\"\"");
@@ -130,10 +216,26 @@ public class DatasetGenerator {
         ArrayList<ResistorBase> bases = loadBases();
         ArrayList<TrainingImage> backgrounds = loadBackgrounds();
 
-        TrainingImage test = backgrounds.get(0);
+        Random rnd = new Random();
+        for(int j = 0; j < 10000; j++) {
+            TrainingImage bck = backgrounds.get(rnd.nextInt(backgrounds.size())).copy();
 
-        test.drawResistorBase(bases.get(0), 0, 0);
-        test.save(new File("C:\\Users\\wdavi\\Downloads\\resistors\\dataset"), 0);
+            for(int i = 0; i < 30; i++) {
+
+                ResistorBase rb1 = bases.get(rnd.nextInt(bases.size()));
+
+                bck.drawResistorBase(rb1,
+                        nextIntRange(rnd, rb1.image.getWidth() * 2, bck.img.getWidth() - rb1.image.getWidth() * 2),
+                        nextIntRange(rnd, rb1.image.getHeight() * 2, bck.img.getHeight() - rb1.image.getHeight() * 2),
+                        rnd.nextInt(360));
+            }
+
+            bck.save(new File("C:\\Users\\wdavi\\Downloads\\resistors\\dataset"), j);
+        }
+    }
+
+    private int nextIntRange(Random rnd, int low, int high) {
+        return low + rnd.nextInt(high - low + 1);
     }
 
     @SuppressWarnings("all")
