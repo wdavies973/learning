@@ -277,7 +277,7 @@ public class RBT {
         Node y;
 
         // Determine y
-        if(z.left.key == null || z.right.key == null) {
+        if(z.left.isNil() || z.isNil()) {
             y = z;
         } else {
             y = successor(z);
@@ -285,17 +285,17 @@ public class RBT {
 
         // Determine x
         Node x;
-        if(y.left.key != null) {
+        if(!y.left.isNil()) {
             x = y.left;
         } else {
             x = y.right;
         }
 
         // Splice out y
-        if(x.key != null) {
+        if(!x.isNil()) {
             x.parent = y.parent;
         }
-        if(y.parent.key == null) {
+        if(y.parent.isNil()) {
             root = x;
         } else if(y == y.parent.left) {
             y.parent.left = x;
@@ -400,37 +400,40 @@ public class RBT {
     }
 
     public static void main(String[] args) {
-        RBT rbt = new RBT();
-        double[] items = new double[]{7, 2, 11, 1, 5, 8, 14, 4, 15};
-        //Arrays.sort(items);
-        rbt.insert(items);
-
-        BSTPrinter.printNode(rbt.root);
-
-        rbt.insert(3);
-
-        BSTPrinter.printNode(rbt.root);
-
-        rbt.insert(2);
-
-        BSTPrinter.printNode(rbt.root);
-
-        rbt.delete(rbt.root);
-
-        BSTPrinter.printNode(rbt.root);
-
-//        double hw1 = 39.6 / 45 * 100 * .1;
-//        double hw2 = 37.8 / 47 * 100 * .12;
-//        double hw3 = 37.9 / 46 * 100 * .12;
-//        double hw4 = 36.7 / 51 * 100 * .12;
-//        double hw5 = 100 * .12;
-//        double hw6 = 100 * .12;
+//        RBT rbt = new RBT();
+//        double[] items = new double[]{7, 2, 11, 1, 5, 8, 14, 4, 15};
+//        //Arrays.sort(items);
+//        rbt.insert(items);
 //
-//        double test1 = 15.8 / 25 * 100 * .15;
-//        double test2 = 100 * .15;
+//        BSTPrinter.printNode(rbt.root);
 //
-//        double grade = hw1 + hw2 + hw3 + hw4 + hw5 + hw6 + test1 + test2;
-//        System.out.println(grade);
+//        rbt.insert(3);
+//
+//        BSTPrinter.printNode(rbt.root);
+//
+//        rbt.insert(2);
+//
+//        BSTPrinter.printNode(rbt.root);
+//
+//        rbt.delete(rbt.root);
+//
+//        BSTPrinter.printNode(rbt.root);
+
+        double hw1 = 44.5 / 45 * 100 * .1;
+        double hw2 = 32.5 / 47 * 100 * .12;
+        double hw3 = 46.0 / 46 * 100 * .12;
+        double hw4 = 20.0 / 51 * 100 * .12;
+        double hw5 = 45.5 / 46 * 100 * .12;
+        double hw6 = 90 * .12;
+
+        double test1 = 23.0 / 25 * 100 * .15;
+        double test2 = 100 * .15;
+
+        double needed = 85 - (hw1 + hw2 + hw3 + hw4 + hw5 + test1 + test2);
+        System.out.println(needed / .12);
+
+        double grade = hw1 + hw2 + hw3 + hw4 + hw5 + hw6 + test1 + test2;
+        System.out.println(grade);
 
 
     }
