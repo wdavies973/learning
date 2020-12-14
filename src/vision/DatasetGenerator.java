@@ -4,9 +4,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,11 +14,7 @@ import java.util.regex.Pattern;
 
 public class DatasetGenerator {
 
-    private static final String PATH_BACKGROUNDS = "C:\\Users\\wdavi\\Downloads\\resistors\\backgrounds";
-    private static final String PATH_RESISTORS = "C:\\Users\\wdavi\\Downloads\\resistors\\full";
-    private static final String PATH_OUTPUT = "C:\\Users\\wdavi\\Downloads\\resistors\\dataset";
-
-    private int numEach;
+    private int numTrain, numTest;
 
     private static class TrainingImage {
         File bnd;
@@ -59,13 +52,13 @@ public class DatasetGenerator {
             regionId += 2;
         }
 
-        public void save(File parent, int id) throws Exception {
+        public void save(File parent, boolean isTest, int id) throws Exception {
             // save the image
-            File img = new File(parent, id + ".png");
+            File img = new File(parent, (isTest ? "/val/" : "/train/") + id + ".png");
             img.createNewFile();
             ImageIO.write(this.img, "PNG", img);
 
-            File annotations = new File(parent, "annotations" + id + ".csv");
+            File annotations = new File(img.getParent(), "annotations" + id + ".csv");
             annotations.createNewFile();
 
             BufferedWriter bw = new BufferedWriter(new FileWriter(annotations));
@@ -117,20 +110,20 @@ public class DatasetGenerator {
                     int b = c.getBlue();
                     int g = c.getGreen();
 
-                    if(rgb != 0) {
-                        r += rnd.nextInt(delta * 2) - delta;
-                        g += rnd.nextInt(delta * 2) - delta;
-                        b += rnd.nextInt(delta * 2) - delta;
-
-                        if(r < 0) r = 0;
-                        else if(r > 255) r = 255;
-
-                        if(b < 0) b = 0;
-                        else if(b > 255) b = 255;
-
-                        if(g < 0) g = 0;
-                        else if(g > 255) g = 255;
-                    }
+//                    if(rgb != 0) {
+//                        r += rnd.nextInt(delta * 2) - delta;
+//                        g += rnd.nextInt(delta * 2) - delta;
+//                        b += rnd.nextInt(delta * 2) - delta;
+//
+//                        if(r < 0) r = 0;
+//                        else if(r > 255) r = 255;
+//
+//                        if(b < 0) b = 0;
+//                        else if(b > 255) b = 255;
+//
+//                        if(g < 0) g = 0;
+//                        else if(g > 255) g = 255;
+//                    }
                     byte alpha = 0;
                     if(rgb == 0) {
                         alpha = (byte) 0;
@@ -208,29 +201,29 @@ public class DatasetGenerator {
         }
     }
 
-    public DatasetGenerator(int numEach) {
-        this.numEach = numEach;
+    public DatasetGenerator(int numTrain, int numTest) {
+        this.numTrain = numTrain;
+        this.numTest = numTest;
     }
 
-    public void generate() throws Exception {
-        ArrayList<ResistorBase> bases = loadBases();
-        ArrayList<TrainingImage> backgrounds = loadBackgrounds();
+    public void generate(File workingDir) throws Exception {
+        ArrayList<ResistorBase> bases = loadBases(workingDir);
+        ArrayList<TrainingImage> backgrounds = loadBackgrounds(workingDir);
 
         Random rnd = new Random();
-        for(int j = 0; j < 10000; j++) {
+        for(int j = 0; j < numTrain + numTest; j++) {
             TrainingImage bck = backgrounds.get(rnd.nextInt(backgrounds.size())).copy();
 
-            for(int i = 0; i < 30; i++) {
-
+            for(int i = 0; i < 4; i++) {
                 ResistorBase rb1 = bases.get(rnd.nextInt(bases.size()));
 
                 bck.drawResistorBase(rb1,
-                        nextIntRange(rnd, rb1.image.getWidth() * 2, bck.img.getWidth() - rb1.image.getWidth() * 2),
-                        nextIntRange(rnd, rb1.image.getHeight() * 2, bck.img.getHeight() - rb1.image.getHeight() * 2),
+                        nextIntRange(rnd, rb1.image.getWidth() * 3, bck.img.getWidth() - rb1.image.getWidth() * 3),
+                        nextIntRange(rnd, rb1.image.getHeight() * 3, bck.img.getHeight() - rb1.image.getHeight() * 3),
                         rnd.nextInt(360));
             }
 
-            bck.save(new File("C:\\Users\\wdavi\\Downloads\\resistors\\dataset"), j);
+            bck.save(workingDir, j >= numTrain, j);
         }
     }
 
@@ -239,10 +232,10 @@ public class DatasetGenerator {
     }
 
     @SuppressWarnings("all")
-    private ArrayList<ResistorBase> loadBases() throws Exception {
+    private ArrayList<ResistorBase> loadBases(File working) throws Exception {
         // 1) Load resistor images into ResistorBase class
-        BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\wdavi\\Downloads\\resistors\\full" +
-                "\\annotations-baseline.csv"));
+        BufferedReader br = new BufferedReader(new FileReader(new File(working, "\\resistors\\annotations-baseline" +
+                ".csv")));
         // Skip the first line
         br.readLine();
 
@@ -254,7 +247,8 @@ public class DatasetGenerator {
             // File name
             Matcher m = Pattern.compile(".*\\.png").matcher(line1);
             m.find();
-            File imagePath = new File("C:\\Users\\wdavi\\Downloads\\resistors\\full", m.group());
+            File imagePath = new File(new File(working, "\\resistors"),
+                    m.group());
 
             // Get regions for both
             Pattern xPattern = Pattern.compile("\"\"all_points_x\"\":\\[((\\d+,|\\d+)*)]");
@@ -294,8 +288,8 @@ public class DatasetGenerator {
     }
 
     @SuppressWarnings("all")
-    private ArrayList<TrainingImage> loadBackgrounds() throws Exception {
-        File dir = new File("C:\\Users\\wdavi\\Downloads\\resistors\\backgrounds");
+    private ArrayList<TrainingImage> loadBackgrounds(File working) throws Exception {
+        File dir = new File(working, "\\backgrounds");
 
         File[] children = dir.listFiles();
 
@@ -309,7 +303,9 @@ public class DatasetGenerator {
     }
 
     public static void main(String[] args) throws Exception {
-        new DatasetGenerator(100).generate();
+        File working = new File(args[0]);
+
+        new DatasetGenerator(Integer.parseInt(args[1]), Integer.parseInt(args[2])).generate(working);
     }
 
 }

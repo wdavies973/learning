@@ -424,13 +424,13 @@ public class RBT {
         double hw3 = 46.0 / 46 * 100 * .12;
         double hw4 = 20.0 / 51 * 100 * .12;
         double hw5 = 45.5 / 46 * 100 * .12;
-        double hw6 = 90 * .12;
+        double hw6 = 52.0 / 53 * 100 * .12;
 
         double test1 = 23.0 / 25 * 100 * .15;
         double test2 = 100 * .15;
 
-        double needed = 85 - (hw1 + hw2 + hw3 + hw4 + hw5 + test1 + test2);
-        System.out.println(needed / .12);
+        double needed = 85 - (hw1 + hw2 + hw3 + hw4 + hw5 + hw6 + test1);
+        System.out.println(needed / .15);
 
         double grade = hw1 + hw2 + hw3 + hw4 + hw5 + hw6 + test1 + test2;
         System.out.println(grade);
