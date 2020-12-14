@@ -37,19 +37,19 @@ public class ColorBinner {
         if(bright < 12) {
             confidence = 12 - bright;
 
-            return new Result("black", score, 0);
+            return new Result("black", score, confidence);
         } else if(saturation < 15 && bright > 80) {
             confidence = Math.min(15 - saturation, bright - 80);
 
-            return new Result("white", score, 0);
+            return new Result("white", score, confidence);
         } else if(saturation < 15 && bright > 60) {
             confidence = Math.min(15 - saturation, bright - 60);
 
-            return new Result("silver", score, 0);
+            return new Result("silver", score, confidence);
         } else if(saturation < 15 && bright > 25) {
             confidence = Math.min(15 - saturation, bright - 25);
 
-            return new Result("grey", score, 0);
+            return new Result("grey", score, confidence);
         }
 
         if(hue >= 336 || hue < 15) {
@@ -59,33 +59,47 @@ public class ColorBinner {
                 confidence = 15 - hue;
             }
 
-            return new Result("red", score, 0);
+            return new Result("red", score, confidence);
         } else if(hue >= 15 && hue < 32) {
-            confidence = Math.min(15 - hue, 32 - hue);
+            confidence = Math.min(hue - 15, 32 - hue);
 
             if(bright < 60 && bright < 25) {
-                return new Result("brown", score, 0);
+                return new Result("brown", score, confidence);
             }
 
-            return new Result("orange", score, 0);
+            return new Result("orange", score, confidence);
         } else if(hue >= 32 && hue < 60) {
+            confidence = Math.min(hue - 32, 60 - hue);
+            
             if(saturation < 40 && bright < 60) {
-                return new Result("tan", score, 0);
+                double check = Math.min(40 - saturation, 60 - bright);
+                
+                return new Result("tan", score, Math.min(confidence, check));
             }
 
-            return new Result("gold", score, 0);
+            return new Result("gold", score, confidence);
         } else if(hue >= 60 && hue < 80) {
+            confidence = Math.min(hue - 60, 80 - hue);
+                
             if(saturation < 20) {
-                return new Result("tan", score, 0);
+                double check = Math.min(confidence, 20 - saturation);
+                
+                return new Result("tan", score, check);
             }
             
-            return new Result("yellow", score, 0);
+            return new Result("yellow", score, confidence);
         } else if(hue >= 80 && hue < 161) {
-            return new Result("green", score, 0);
+            confidence = Math.min(hue - 80, 161- hue);
+            
+            return new Result("green", score, confidence);
         } else if(hue >= 161 && hue < 241) {
-            return new Result("blue", score, 0);
+            confidence = Math.min(hue - 161, 241 - hue);
+            
+            return new Result("blue", score, confidence);
         } else if(hue >= 241 && hue < 336) {
-            return new Result("violet", score, 0);
+            confidence = Math.min(hue - 243, 336 - hue);
+            
+            return new Result("violet", score, confidence);
         }
 
         return null;

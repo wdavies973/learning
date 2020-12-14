@@ -117,9 +117,8 @@ public class ResistorDetector {
                 float[] hsb = Color.RGBtoHSB((p >> 16) & 0xff, (p >> 8) & 0xff, p & 0xff, null);
                 ColorBinner.Result closest = cb.query(hsb);
 
-                if(closest != null) {
+                if(closest != null && closest.confidence > 3) {
                     //if(closest.equals("orange")) System.out.println(x+","+y);
-
                     hues.put(closest.name, hues.get(closest.name) + closest.score);
                 }
             }
@@ -131,7 +130,6 @@ public class ResistorDetector {
     }
 
     // Improvement: Some tolerances/color bands can't swap
-
     public static void main(String[] args) throws Exception {
         File resistor = new File("C:\\Users\\wdavi\\Desktop\\UMN-5561\\ocular\\data\\resistors\\resistors\\47kohm.png");
         //File resistor = new File("C:\\Users\\wdavi\\Downloads\\47kohm.png");
